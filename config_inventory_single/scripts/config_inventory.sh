@@ -20,7 +20,6 @@ inventory_file=$(
   echo "[OSEv3:vars]"
   echo "ansible_ssh_user=root"
   echo "openshift_deployment_type=openshift-enterprise"
-  echo "deployment_subtype=registry"
   echo "openshift_hosted_infra_selector=\"\""
   echo "openshift_disable_check=docker_storage,docker_image_availability"
   echo "openshift_master_default_subdomain=$2.nip.io"
