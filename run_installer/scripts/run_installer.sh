@@ -14,6 +14,7 @@ if ansible-playbook -vvv playbooks/prerequisites.yml ; then
         htpasswd -b /etc/origin/master/htpasswd $1 $2
         master-restart api
         master-restart controllers
+        oc login -u system:admin -n default
         oc adm policy add-cluster-role-to-user cluster-admin $1
         #oc project default
         printf "\033[32m[*] User Account Created Successfully \033[0m\n"

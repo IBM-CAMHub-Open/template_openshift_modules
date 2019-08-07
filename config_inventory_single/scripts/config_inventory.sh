@@ -21,7 +21,7 @@ inventory_file=$(
   echo "ansible_ssh_user=root"
   echo "openshift_deployment_type=openshift-enterprise"
   echo "deployment_subtype=registry"
-  echo "openshift_hosted_infra_selector="""
+  echo "openshift_hosted_infra_selector=\"\""
   echo "openshift_disable_check=docker_storage,docker_image_availability"
   echo "openshift_master_default_subdomain=$2.nip.io"
   echo "os_firewall_use_firewalld=True"
@@ -36,6 +36,6 @@ inventory_file=$(
   echo "$1.$domain_name"
   echo ""
   echo "[nodes]"
-  echo "$1.$domain_name openshift_node_group_name='node-config-all-in-one''"
+  echo "$1.$domain_name openshift_node_group_name='node-config-all-in-one'"
 )
 echo "${inventory_file}" > /etc/ansible/hosts

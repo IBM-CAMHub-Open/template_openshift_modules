@@ -33,6 +33,14 @@ resource "null_resource" "run_installer" {
       "bash -c '/tmp/run_installer.sh ${var.openshift_user} ${var.openshift_password}'"
     ]
   }
+
+  provisioner "remote-exec" {
+    when                  = "destroy"
+    inline                = [
+      "set -e",
+      "subscription-manager unregister",
+    ]
+  }
 }
 
 resource "null_resource" "finish_installing" {

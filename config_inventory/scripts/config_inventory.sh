@@ -26,6 +26,11 @@ domain_name=$9
 enable_lb=${10}
 enable_glusterfs=${11}
 
+if [[ ${#computehostnames[@]} < 3 && $enable_glusterfs == "true" ]]; then
+  printf "\033[31m[ERROR] You need at least 3 compute nodes to configure GlusterFS. Deploy Openshift Cluster Failed\033[0m\n"
+  exit 1
+fi
+
 # function find_disk()
 # {
 #   # Will return an unallocated disk, it will take a sorting order from largest to smallest, allowing a the caller to indicate which disk
