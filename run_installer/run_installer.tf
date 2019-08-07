@@ -46,6 +46,6 @@ resource "null_resource" "run_installer" {
 resource "null_resource" "finish_installing" {
   depends_on = ["null_resource.run_installer"]
   provisioner "local-exec" {
-    command = "echo 'Installing Openshift 3.11 finished successfully'"
+    command = "echo 'Installing OpenShift 3.11 finished successfully'"
   }
 }

@@ -1,10 +1,13 @@
 #!/bin/bash
 
+#uncomment the log_path in /etc/ansible/ansible.cfg
+sed -i '/log_path/s/^#//g' /etc/ansible/ansible.cfg
+
 cd /usr/share/ansible/openshift-ansible
 if ansible-playbook -vvv playbooks/prerequisites.yml ; then
     printf "\033[32m[*] Prerequisites Succeeded \033[0m\n"
     if ansible-playbook -vvv playbooks/deploy_cluster.yml ; then
-        printf "\033[32m[*] Deploy Openshift Cluster Succeeded \033[0m\n"
+        printf "\033[32m[*] Deploy OpenShift Cluster Succeeded \033[0m\n"
         #sed -i -e 's/DenyAllPasswordIdentityProvider/HTPasswdPasswordIdentityProvider/g' /etc/origin/master/master-config.yaml
         #sed -i -e '/HTPasswdPasswordIdentityProvider/a \ \ \ \ \ \ file: /etc/origin/master/htpasswd' /etc/origin/master/master-config.yaml
         #sed -ni '/provider:/{x;d;};1h;1!{x;p;};${x;p;}' /etc/origin/master/master-config.yaml
@@ -19,7 +22,7 @@ if ansible-playbook -vvv playbooks/prerequisites.yml ; then
         #oc project default
         printf "\033[32m[*] User Account Created Successfully \033[0m\n"
     else
-        printf "\033[31m[ERROR] Deploy Openshift Cluster Failed\033[0m\n"
+        printf "\033[31m[ERROR] Deploy OpenShift Cluster Failed\033[0m\n"
         exit 1
     fi
 else
