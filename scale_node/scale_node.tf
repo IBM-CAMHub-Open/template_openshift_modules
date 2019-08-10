@@ -4,14 +4,19 @@ resource "null_resource" "master_dependsOn" {
 	  command = "echo The dependsOn output for hostfile module is ${var.dependsOn}"
   }
 }
-resource "null_resource" "run_installer" {
+resource "null_resource" "scale_node" {
   depends_on = ["null_resource.master_dependsOn"]
+
+  triggers {
+    workers = "${join(",", var.compute_vm_ipv4_address)}"
+  }
 
   connection {
     type = "ssh"
     user = "${var.vm_os_user}"
     password =  "${var.vm_os_password}"
     private_key = "${var.private_key}"
+    timeout = "30m"
     host = "${var.master_vm_ipv4_address}"
     bastion_host        = "${var.bastion_host}"
     bastion_user        = "${var.bastion_user}"
@@ -21,23 +26,29 @@ resource "null_resource" "run_installer" {
     bastion_password    = "${var.bastion_password}"      
   }
 
+  provisioner "remote-exec" {
+    inline = [
+      "echo -n ${join(",", var.compute_vm_hostname)} > /tmp/new_compute.txt"    
+    ]
+  }
+
   provisioner "file" {
-    source = "${path.module}/scripts/run_installer.sh"
-    destination = "/tmp/run_installer.sh"
+    source = "${path.module}/scripts/scale_node.sh"
+    destination = "/tmp/scale_node.sh"
   }
 
   provisioner "remote-exec" {
     inline = [
       "set -e",
-      "chmod 755 /tmp/run_installer.sh",
-      "bash -c '/tmp/run_installer.sh ${var.openshift_user} ${var.openshift_password}'"
+      "chmod 755 /tmp/scale_node.sh",
+      "bash -c '/tmp/scale_node.sh ${var.domain_name} ${var.vm_os_password}'"
     ]
   }
 }
 
 resource "null_resource" "finish_installing" {
-  depends_on = ["null_resource.run_installer"]
+  depends_on = ["null_resource.scale_node"]
   provisioner "local-exec" {
-    command = "echo 'Installing OpenShift 3.11 finished successfully'"
+    command = "echo 'Scale Node Openshift 3.11 finished successfully'"
   }
 }

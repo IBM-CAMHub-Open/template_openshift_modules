@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 masterstr=$(echo $1 | sed 's/[][]//g' )
 IFS=',' read -r -a masterhostnames <<< "$masterstr"
 
@@ -25,27 +23,22 @@ rh_password=$8
 domain_name=$9
 enable_lb=${10}
 enable_glusterfs=${11}
+os_password=${12}
+disk=$(head -n 1 /tmp/glusterfs_disk.txt)
+
+# SSH key
+allhostnames=( "${masterhostnames[@]}" "${etcdhostnames[@]}" "${computehostnames[@]}" "${lbhostnames[@]}" "${infrahostnames[@]}" )
+yes y | ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
+yum -y install sshpass
+for index in "${!allhostnames[@]}"
+do
+    sshpass -p $os_password ssh-copy-id -i ~/.ssh/id_rsa.pub -o StrictHostKeyChecking=no ${allhostnames[index]}.$domain_name
+done
 
 if [[ ${#computehostnames[@]} < 3 && $enable_glusterfs == "true" ]]; then
   printf "\033[31m[ERROR] You need at least 3 compute nodes to configure GlusterFS. Deploy Openshift Cluster Failed\033[0m\n"
   exit 1
 fi
-
-# function find_disk()
-# {
-#   # Will return an unallocated disk, it will take a sorting order from largest to smallest, allowing a the caller to indicate which disk
-#   [[ -z "$1" ]] && whichdisk=1 || whichdisk=$1
-#   local readonly=`parted -l 2>&1 | egrep -i "Warning:" | tr ' ' '\n' | egrep "/dev/" | sort -u | xargs -i echo "{}|" | xargs echo "NONE|" | tr -d ' ' | rev | cut -c2- | rev`
-#   diskcount=`sudo parted -l 2>&1 | egrep -v "$readonly" | egrep -c -i 'ERROR: '`
-#   if [ "$diskcount" -lt "$whichdisk" ] ; then
-#         echo ""
-#   else
-#         # Find the disk name
-#         greplist=`sudo parted -l 2>&1 | egrep -v "$readonly" | egrep -i "ERROR:" |cut -f2 -d: | xargs -i echo "Disk.{}:|" | xargs echo | tr -d ' ' | rev | cut -c2- | rev`
-#         echo `sudo fdisk -l  | egrep "$greplist"  | sort -k5nr | head -n $whichdisk | tail -n1 | cut -f1 -d: | cut -f2 -d' '`
-#   fi
-# }
-# gfsdisk=find_disk
 
 mv /etc/ansible/hosts /etc/ansible/hosts_old.backup
 touch /etc/ansible/hosts
@@ -61,7 +54,6 @@ inventory_file=$(
   if [[ $enable_glusterfs == "true" ]]; then
     echo "glusterfs"
   fi
-  echo ""
   echo "[OSEv3:vars]"
   echo "ansible_ssh_user=root"
   echo "openshift_deployment_type=openshift-enterprise"
@@ -94,7 +86,7 @@ inventory_file=$(
     echo "[glusterfs]"
     for index in "${!computehostnames[@]}"
     do
-      echo "${computehostnames[index]}.$domain_name glusterfs_devices='[ \"/dev/sdb\" ]'"
+      echo "${computehostnames[index]}.$domain_name glusterfs_devices='[ \"$disk\" ]'"
     done
     echo ""
   fi

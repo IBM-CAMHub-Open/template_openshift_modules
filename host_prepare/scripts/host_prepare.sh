@@ -7,6 +7,7 @@ IFS=',' read -r -a allhostnames <<< "$hostnamestr"
 installer_hostname=$4
 domain_name=$5
 os_password=$6
+compute_hostname=$7
 
 # Set hostname
 hostnamectl set-hostname "$(hostname -f)"
@@ -46,16 +47,6 @@ yum -y install wget git net-tools bind-utils yum-utils iptables-services bridge-
 yum -y update
 yum -y install openshift-ansible
 
-# SSH key
-if [[ "$installer_hostname.$domain_name" == "$(hostname -f)" ]]; then
-    yes y | ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
-    yum -y install sshpass
-    for index in "${!allhostnames[@]}"
-    do
-        sshpass -p $os_password ssh-copy-id -i ~/.ssh/id_rsa.pub -o StrictHostKeyChecking=no ${allhostnames[index]}.$domain_name
-    done
-fi
-
 # Install docker 1.31.1
 yum -y remove docker \
                   docker-client \
@@ -80,3 +71,26 @@ subscription-manager repos --enable=rh-gluster-3-client-for-rhel-7-server-rpms
 yum -y update glusterfs-fuse
 sudo setsebool -P virt_sandbox_use_fusefs on
 sudo setsebool -P virt_use_fusefs on
+
+# Send available disk name to installer node
+function find_disk()
+{
+  # Will return an unallocated disk, it will take a sorting order from largest to smallest, allowing a the caller to indicate which disk
+  [[ -z "$1" ]] && whichdisk=1 || whichdisk=$1
+  local readonly=`parted -l 2>&1 | egrep -i "Warning:" | tr ' ' '\n' | egrep "/dev/" | sort -u | xargs -i echo "{}|" | xargs echo "NONE|" | tr -d ' ' | rev | cut -c2- | rev`
+  diskcount=`sudo parted -l 2>&1 | egrep -v "$readonly" | egrep -c -i 'ERROR: '`
+  if [ "$diskcount" -lt "$whichdisk" ] ; then
+        echo ""
+  else
+        # Find the disk name
+        greplist=`sudo parted -l 2>&1 | egrep -v "$readonly" | egrep -i "ERROR:" |cut -f2 -d: | xargs -i echo "Disk.{}:|" | xargs echo | tr -d ' ' | rev | cut -c2- | rev`
+        echo `sudo fdisk -l  | egrep "$greplist"  | sort -k5nr | head -n $whichdisk | tail -n1 | cut -f1 -d: | cut -f2 -d' '`
+  fi
+}
+
+if [[ $compute_hostname.$domain_name == $(hostname -f) ]]; then
+    gfsdisk=`find_disk`
+    touch glusterfs_disk.txt
+    echo $gfsdisk > glusterfs_disk.txt
+    sshpass -p $os_password scp -o StrictHostKeyChecking=no glusterfs_disk.txt root@$installer_hostname.$domain_name:/tmp
+fi

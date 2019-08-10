@@ -13,6 +13,7 @@ resource "null_resource" "prepare_node" {
     user = "${var.vm_os_user}"
     password =  "${var.vm_os_password}"
     private_key = "${var.private_key}"
+    timeout = "30m"
     host = "${var.vm_ipv4_address_list[count.index]}"
     bastion_host        = "${var.bastion_host}"
     bastion_user        = "${var.bastion_user}"
@@ -30,8 +31,16 @@ resource "null_resource" "prepare_node" {
     inline = [
       "set -e",
       "chmod 755 /tmp/host_prepare.sh",
-      "bash -c '/tmp/host_prepare.sh ${var.rh_user} ${var.rh_password} ${var.vm_hostname_list} ${var.installer_hostname} ${var.domain_name} ${var.vm_os_password}'"
+      "bash -c '/tmp/host_prepare.sh ${var.rh_user} ${var.rh_password} ${var.vm_hostname_list} ${var.installer_hostname} ${var.domain_name} ${var.vm_os_password} ${var.compute_hostname}'"
       #"(sleep 5 && reboot)&"
+    ]
+  }
+
+  provisioner "remote-exec" {
+    when                  = "destroy"
+    inline                = [
+      "set -e",
+      "subscription-manager unregister"
     ]
   }
 }

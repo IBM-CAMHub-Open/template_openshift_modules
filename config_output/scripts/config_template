@@ -1,0 +1,20 @@
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: @@certificate-authority@@
+    server: https://@@host@@:@@port@@
+  name: @@clustername@@
+contexts:
+- context:
+    cluster: @@clustername@@
+    namespace: default
+    user: @@user@@/@@clustername@@
+  name: default/@@clustername@@/@@user@@
+current-context: default/@@clustername@@/@@user@@
+kind: Config
+preferences: {}
+users:
+- name: @@user@@/@@clustername@@
+  user:
+    client-certificate-data: @@client-certificate@@
+    client-key-data: @@client-key@@

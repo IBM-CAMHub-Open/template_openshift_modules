@@ -20,6 +20,17 @@ resource "null_resource" "config_inventory_file" {
     bastion_host_key    = "${var.bastion_host_key}"
     bastion_password    = "${var.bastion_password}"      
   }
+
+  provisioner "remote-exec" {
+    inline = [
+      "echo -n ${var.master_vm_hostname} > /tmp/old_master.txt",
+      "echo -n ${var.etcd_vm_hostname} > /tmp/old_etcd.txt",
+      "echo -n ${var.compute_vm_hostname} > /tmp/old_compute.txt",
+      "echo -n ${var.lb_vm_hostname} > /tmp/old_lb.txt",
+      "echo -n ${var.infra_vm_hostname} > /tmp/old_infra.txt"
+    ]
+  }
+
   provisioner "file" {
     source = "${path.module}/scripts/config_inventory.sh"
     destination = "/tmp/config_inventory.sh"
@@ -29,7 +40,7 @@ resource "null_resource" "config_inventory_file" {
     inline = [
       "set -e",
       "chmod 755 /tmp/config_inventory.sh",
-      "bash -c '/tmp/config_inventory.sh ${var.master_vm_hostname} ${var.etcd_vm_hostname} ${var.compute_vm_hostname} ${var.lb_vm_hostname} ${var.infra_vm_hostname} ${var.infra_vm_ipv4_address} ${var.rh_user} ${var.rh_password} ${var.domain_name} ${var.enable_lb} ${var.compute_enable_glusterFS}'"
+      "bash -c '/tmp/config_inventory.sh ${var.master_vm_hostname} ${var.etcd_vm_hostname} ${var.compute_vm_hostname} ${var.lb_vm_hostname} ${var.infra_vm_hostname} ${var.infra_vm_ipv4_address} ${var.rh_user} ${var.rh_password} ${var.domain_name} ${var.enable_lb} ${var.compute_enable_glusterFS} ${var.vm_os_password}'"
     ]
   }
 }

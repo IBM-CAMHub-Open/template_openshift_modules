@@ -11,6 +11,13 @@ resource "vsphere_virtual_machine" "vm" {
   guest_id         = "${data.vsphere_virtual_machine.vm_template.guest_id}"
   scsi_type        = "${data.vsphere_virtual_machine.vm_template.scsi_type}"
 
+  # tags = {
+  #   # Initial value for Name is overridden by our automatic scheduled
+  #   # re-tagging process; changes to this are ignored by ignore_changes
+  #   # below.
+  #   datastore_id = "${data.vsphere_datastore.vsphere_datastore.id}"
+  # }
+
   clone {
     template_uuid = "${data.vsphere_virtual_machine.vm_template.id}"
     timeout = "${var.vm_clone_timeout}"
@@ -41,6 +48,14 @@ resource "vsphere_virtual_machine" "vm" {
     size           = "${var.vm_disk1_size}"
     keep_on_remove = "${var.vm_disk1_keep_on_remove}"
     datastore_id   = "${data.vsphere_datastore.vsphere_datastore.id}"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      "datastore_id",
+      "disk.0.datastore_id"
+    ]
+    create_before_destroy = true
   }
 
   // module "Setup_ssh_master" {
@@ -201,6 +216,13 @@ resource "vsphere_virtual_machine" "vm2disk" {
     keep_on_remove = "${var.vm_disk2_keep_on_remove}"
     datastore_id   = "${data.vsphere_datastore.vsphere_datastore.id}"
     unit_number    = 1
+  }
+
+  lifecycle {
+    ignore_changes = [
+      "datastore_id",
+      "disk.0.datastore_id"
+    ]
   }
 
   # Specify the connection
