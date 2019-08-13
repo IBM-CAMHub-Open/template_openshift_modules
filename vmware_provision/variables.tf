@@ -18,8 +18,8 @@ data "vsphere_network" "vm_network" {
   datacenter_id = "${data.datacenter.datacenter.id}"
 }
 
-data "vsphere_virtual_machine" "vm_template" {
-  name = "${var.vm_template}"
+data "vsphere_virtual_machine" "vm_image_template" {
+  name = "${var.vm_image_template}"
   datacenter_id = "${data.datacenter.datacenter.id}"
 }
 variable "enable_vm" {
@@ -55,7 +55,7 @@ variable "vm_folder" {
   description = "Target vSphere folder for virtual machine"
 }
 
-variable "vm_template" {
+variable "vm_image_template" {
   description = "Target vSphere folder for virtual machine"
 }
 
@@ -63,7 +63,7 @@ variable "datacenter" {
   description = "Target vSphere datacenter for virtual machine creation"
 }
 
-variable "vm_domain" {
+variable "vm_domain_name" {
   description = "Domain Name of virtual machine"
 }
 

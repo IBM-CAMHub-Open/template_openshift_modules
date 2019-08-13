@@ -8,8 +8,8 @@ resource "vsphere_virtual_machine" "vm" {
   memory           = "${var.vm_memory}"
   resource_pool_id = "${data.resource_pool.resource_pool.id}"
   datastore_id     = "${data.vsphere_datastore.vsphere_datastore.id}"
-  guest_id         = "${data.vsphere_virtual_machine.vm_template.guest_id}"
-  scsi_type        = "${data.vsphere_virtual_machine.vm_template.scsi_type}"
+  guest_id         = "${data.vsphere_virtual_machine.vm_image_template.guest_id}"
+  scsi_type        = "${data.vsphere_virtual_machine.vm_image_template.scsi_type}"
 
   # tags = {
   #   # Initial value for Name is overridden by our automatic scheduled
@@ -19,11 +19,11 @@ resource "vsphere_virtual_machine" "vm" {
   # }
 
   clone {
-    template_uuid = "${data.vsphere_virtual_machine.vm_template.id}"
+    template_uuid = "${data.vsphere_virtual_machine.vm_image_template.id}"
     timeout = "${var.vm_clone_timeout}"
     customize {
       linux_options {
-        domain    = "${var.vm_domain}"
+        domain    = "${var.vm_domain_name}"
         host_name = "${var.vm_name[count.index]}"
       }
 
@@ -158,7 +158,7 @@ EOF
   }
 
   provisioner "local-exec" {
-    command = "echo \"${self.clone.0.customize.0.network_interface.0.ipv4_address}       ${self.name}.${var.vm_domain} ${self.name}\" >> /tmp/${var.random}/hosts"
+    command = "echo \"${self.clone.0.customize.0.network_interface.0.ipv4_address}       ${self.name}.${var.vm_domain_name} ${self.name}\" >> /tmp/${var.random}/hosts"
   }
 }
 
@@ -172,16 +172,16 @@ resource "vsphere_virtual_machine" "vm2disk" {
   memory           = "${var.vm_memory}"
   resource_pool_id = "${data.resource_pool.resource_pool.id}"
   datastore_id     = "${data.vsphere_datastore.vsphere_datastore.id}"
-  guest_id         = "${data.vsphere_virtual_machine.vm_template.guest_id}"
-  scsi_type        = "${data.vsphere_virtual_machine.vm_template.scsi_type}"
+  guest_id         = "${data.vsphere_virtual_machine.vm_image_template.guest_id}"
+  scsi_type        = "${data.vsphere_virtual_machine.vm_image_template.scsi_type}"
 
   clone {
-    template_uuid = "${data.vsphere_virtual_machine.vm_template.id}"
+    template_uuid = "${data.vsphere_virtual_machine.vm_image_template.id}"
     timeout = "${var.vm_clone_timeout}"
     
     customize {
       linux_options {
-        domain    = "${var.vm_domain}"
+        domain    = "${var.vm_domain_name}"
         host_name = "${var.vm_name[count.index]}"
       }
 
@@ -316,7 +316,7 @@ EOF
   }
 
   provisioner "local-exec" {
-    command = "echo \"${self.clone.0.customize.0.network_interface.0.ipv4_address}       ${self.name}.${var.vm_domain} ${self.name}\" >> /tmp/${var.random}/hosts"
+    command = "echo \"${self.clone.0.customize.0.network_interface.0.ipv4_address}       ${self.name}.${var.vm_domain_name} ${self.name}\" >> /tmp/${var.random}/hosts"
   }
 }
 

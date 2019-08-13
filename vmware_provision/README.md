@@ -21,7 +21,7 @@ Copyright IBM Corp. 2018, 2018
 | vm_disk2_size | Size of template disk volume | string | - | yes |
 | dns_servers | DNS servers for the virtual network adapter | list | - | yes |
 | dns_suffixes | Name resolution suffixes for the virtual network adapter | list | - | yes |
-| vm_domain | Domain Name of virtual machine | string | - | yes |
+| vm_domain_name | Domain Name of virtual machine | string | - | yes |
 | vm_folder | Target vSphere folder for virtual machine | string | - | yes |
 | vm_ipv4_address | IPv4 address for vNIC configuration | list | - | yes |
 | vm_ipv4_gateway | IPv4 gateway for vNIC configuration | string | - | yes |
@@ -33,7 +33,7 @@ Copyright IBM Corp. 2018, 2018
 | vm_os_user | Operating System user for the Operating System User to access virtual machine | string | - | yes |
 | vm_private_ssh_key |  | string | - | yes |
 | vm_public_ssh_key |  | string | - | yes |
-| vm_template | Target vSphere folder for virtual machine | string | - | yes |
+| vm_image_template | Target vSphere folder for virtual machine | string | - | yes |
 | vm_vcpu | Number of virtual CPU for the virtual machine, which is required to be a positive Integer | string | `1` | no |
 | datacenter | Target vSphere datacenter for virtual machine creation | string | - | yes |
 | resource_pool | Target vSphere Resource Pool to host the virtual machine | string | - | yes |
