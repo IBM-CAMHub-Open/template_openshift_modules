@@ -6,8 +6,8 @@ resource "vsphere_virtual_machine" "vm" {
   folder           = "${var.vm_folder}"
   num_cpus         = "${var.vm_vcpu}"
   memory           = "${var.vm_memory}"
-  resource_pool_id = "${data.resource_pool.id}"
-  datastore_id     = "${data.vsphere_datastore.vsphere_datastore.id}"
+  resource_pool_id = "${data.vsphere_resource_pool.resource_pool.id}"
+  datastore_id     = "${data.vsphere_datastore.datastore.id}"
   guest_id         = "${data.vsphere_virtual_machine.vm_image_template.guest_id}"
   scsi_type        = "${data.vsphere_virtual_machine.vm_image_template.scsi_type}"
 
@@ -15,7 +15,7 @@ resource "vsphere_virtual_machine" "vm" {
   #   # Initial value for Name is overridden by our automatic scheduled
   #   # re-tagging process; changes to this are ignored by ignore_changes
   #   # below.
-  #   datastore_id = "${data.vsphere_datastore.vsphere_datastore.id}"
+  #   datastore_id = "${data.vsphere_datastore.datastore.id}"
   # }
 
   clone {
@@ -47,7 +47,7 @@ resource "vsphere_virtual_machine" "vm" {
     label          = "${var.vm_name[count.index]}.vmdk"
     size           = "${var.vm_disk1_size}"
     keep_on_remove = "${var.vm_disk1_keep_on_remove}"
-    datastore_id   = "${data.vsphere_datastore.vsphere_datastore.id}"
+    datastore_id   = "${data.vsphere_datastore.datastore.id}"
   }
 
   lifecycle {
@@ -170,8 +170,8 @@ resource "vsphere_virtual_machine" "vm2disk" {
   folder           = "${var.vm_folder}"
   num_cpus         = "${var.vm_vcpu}"
   memory           = "${var.vm_memory}"
-  resource_pool_id = "${data.resource_pool.id}"
-  datastore_id     = "${data.vsphere_datastore.vsphere_datastore.id}"
+  resource_pool_id = "${data.vsphere_resource_pool.resource_pool.id}"
+  datastore_id     = "${data.vsphere_datastore.datastore.id}"
   guest_id         = "${data.vsphere_virtual_machine.vm_image_template.guest_id}"
   scsi_type        = "${data.vsphere_virtual_machine.vm_image_template.scsi_type}"
 
@@ -207,14 +207,14 @@ resource "vsphere_virtual_machine" "vm2disk" {
     keep_on_remove = "${var.vm_disk1_keep_on_remove}"
 
     // controller_type = "${var.vm_disk1_controller_type}"
-    datastore_id = "${data.vsphere_datastore.vsphere_datastore.id}"
+    datastore_id = "${data.vsphere_datastore.datastore.id}"
   }
 
   disk {
     label          = "${var.vm_name[count.index]}Disk2.vmdk"
     size           = "${var.vm_disk2_size}"
     keep_on_remove = "${var.vm_disk2_keep_on_remove}"
-    datastore_id   = "${data.vsphere_datastore.vsphere_datastore.id}"
+    datastore_id   = "${data.vsphere_datastore.datastore.id}"
     unit_number    = 1
   }
 
