@@ -2,25 +2,25 @@
 ##############################################################
 # Vsphere data for provider
 ##############################################################
-data "vsphere_datacenter" "vsphere_datacenter" {
-  name = "${var.vsphere_datacenter}"
+data "datacenter" "datacenter" {
+  name = "${var.datacenter}"
 }
 data "vsphere_datastore" "vsphere_datastore" {
   name = "${var.vm_disk1_datastore}" 
-  datacenter_id = "${data.vsphere_datacenter.vsphere_datacenter.id}"
+  datacenter_id = "${data.datacenter.datacenter.id}"
 }
-data "vsphere_resource_pool" "vsphere_resource_pool" {
-  name = "${var.vsphere_resource_pool}"
-  datacenter_id = "${data.vsphere_datacenter.vsphere_datacenter.id}"
+data "resource_pool" "resource_pool" {
+  name = "${var.resource_pool}"
+  datacenter_id = "${data.datacenter.datacenter.id}"
 }
 data "vsphere_network" "vm_network" {
-  name = "${var.vm_network_interface_label}"
-  datacenter_id = "${data.vsphere_datacenter.vsphere_datacenter.id}"
+  name = "${var.network}"
+  datacenter_id = "${data.datacenter.datacenter.id}"
 }
 
 data "vsphere_virtual_machine" "vm_template" {
   name = "${var.vm_template}"
-  datacenter_id = "${data.vsphere_datacenter.vsphere_datacenter.id}"
+  datacenter_id = "${data.datacenter.datacenter.id}"
 }
 variable "enable_vm" {
   type = "string"
@@ -59,7 +59,7 @@ variable "vm_template" {
   description = "Target vSphere folder for virtual machine"
 }
 
-variable "vsphere_datacenter" {
+variable "datacenter" {
   description = "Target vSphere datacenter for virtual machine creation"
 }
 
@@ -77,21 +77,21 @@ variable "vm_memory" {
   default = "1024"
 }
 
-variable "vsphere_resource_pool" {
+variable "resource_pool" {
   description = "Target vSphere Resource Pool to host the virtual machine"
 }
 
-variable "vm_dns_suffixes" {
+variable "dns_suffixes" {
   type = "list"
   description = "Name resolution suffixes for the virtual network adapter"
 }
 
-variable "vm_dns_servers" {
+variable "dns_servers" {
   type = "list"
   description = "DNS servers for the virtual network adapter"
 }
 
-variable "vm_network_interface_label" {
+variable "network" {
   description = "vSphere port group or network label for virtual machine's vNIC"
 }
 
@@ -109,11 +109,10 @@ variable "vm_ipv4_prefix_length" {
   description = "IPv4 prefix length for vNIC configuration. The value must be a number between 8 and 32"
 }
 
-variable "vm_adapter_type" {
+variable "adapter_type" {
   description = "Network adapter type for vNIC Configuration"
   default = "vmxnet3"
 }
-
 
 variable "vm_disk1_size" {
   description = "Size of template disk volume"
@@ -129,10 +128,10 @@ variable "vm_disk1_datastore" {
   description = "Data store or storage cluster name for target virtual machine's disks"
 }
 
-
 variable "vm_disk2_enable" {
   type = "string"
   description = "Enable a Second disk on VM"
+  default = "false"
 } 
 
 variable "vm_disk2_size" {
@@ -156,7 +155,6 @@ variable "vm_clone_timeout" {
 
 variable "random" {
   type = "string"
-
   description = "Random String Generated"
 }
 

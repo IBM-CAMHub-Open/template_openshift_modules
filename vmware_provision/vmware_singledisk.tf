@@ -6,7 +6,7 @@ resource "vsphere_virtual_machine" "vm" {
   folder           = "${var.vm_folder}"
   num_cpus         = "${var.vm_vcpu}"
   memory           = "${var.vm_memory}"
-  resource_pool_id = "${data.vsphere_resource_pool.vsphere_resource_pool.id}"
+  resource_pool_id = "${data.resource_pool.resource_pool.id}"
   datastore_id     = "${data.vsphere_datastore.vsphere_datastore.id}"
   guest_id         = "${data.vsphere_virtual_machine.vm_template.guest_id}"
   scsi_type        = "${data.vsphere_virtual_machine.vm_template.scsi_type}"
@@ -33,14 +33,14 @@ resource "vsphere_virtual_machine" "vm" {
       }
 
       ipv4_gateway    = "${var.vm_ipv4_gateway}"
-      dns_suffix_list = "${var.vm_dns_suffixes}"
-      dns_server_list = "${var.vm_dns_servers}"
+      dns_suffix_list = "${var.dns_suffixes}"
+      dns_server_list = "${var.dns_servers}"
     }
   }
 
   network_interface {
     network_id   = "${data.vsphere_network.vm_network.id}"
-    adapter_type = "${var.vm_adapter_type}"
+    adapter_type = "${var.adapter_type}"
   }
 
   disk {
@@ -170,7 +170,7 @@ resource "vsphere_virtual_machine" "vm2disk" {
   folder           = "${var.vm_folder}"
   num_cpus         = "${var.vm_vcpu}"
   memory           = "${var.vm_memory}"
-  resource_pool_id = "${data.vsphere_resource_pool.vsphere_resource_pool.id}"
+  resource_pool_id = "${data.resource_pool.resource_pool.id}"
   datastore_id     = "${data.vsphere_datastore.vsphere_datastore.id}"
   guest_id         = "${data.vsphere_virtual_machine.vm_template.guest_id}"
   scsi_type        = "${data.vsphere_virtual_machine.vm_template.scsi_type}"
@@ -191,14 +191,14 @@ resource "vsphere_virtual_machine" "vm2disk" {
       }
 
       ipv4_gateway    = "${var.vm_ipv4_gateway}"
-      dns_suffix_list = "${var.vm_dns_suffixes}"
-      dns_server_list = "${var.vm_dns_servers}"
+      dns_suffix_list = "${var.dns_suffixes}"
+      dns_server_list = "${var.dns_servers}"
     }
   }
 
   network_interface {
     network_id   = "${data.vsphere_network.vm_network.id}"
-    adapter_type = "${var.vm_adapter_type}"
+    adapter_type = "${var.adapter_type}"
   }
 
   disk {
