@@ -7,20 +7,20 @@ data "vsphere_datacenter" "datacenter" {
 }
 data "vsphere_datastore" "vsphere_datastore" {
   name = "${var.vm_disk1_datastore}" 
-  datacenter_id = "${data.datacenter.datacenter.id}"
+  datacenter_id = "${data.datacenter.id}"
 }
 data "vsphere_resource_pool" "resource_pool" {
   name = "${var.resource_pool}"
-  datacenter_id = "${data.datacenter.datacenter.id}"
+  datacenter_id = "${data.datacenter.id}"
 }
 data "vsphere_network" "vm_network" {
   name = "${var.network}"
-  datacenter_id = "${data.datacenter.datacenter.id}"
+  datacenter_id = "${data.datacenter.id}"
 }
 
 data "vsphere_virtual_machine" "vm_image_template" {
   name = "${var.vm_image_template}"
-  datacenter_id = "${data.datacenter.datacenter.id}"
+  datacenter_id = "${data.datacenter.id}"
 }
 variable "enable_vm" {
   type = "string"
