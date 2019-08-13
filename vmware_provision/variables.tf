@@ -2,14 +2,14 @@
 ##############################################################
 # Vsphere data for provider
 ##############################################################
-data "datacenter" "datacenter" {
+data "vsphere_datacenter" "datacenter" {
   name = "${var.datacenter}"
 }
 data "vsphere_datastore" "vsphere_datastore" {
   name = "${var.vm_disk1_datastore}" 
   datacenter_id = "${data.datacenter.datacenter.id}"
 }
-data "resource_pool" "resource_pool" {
+data "vsphere_resource_pool" "resource_pool" {
   name = "${var.resource_pool}"
   datacenter_id = "${data.datacenter.datacenter.id}"
 }
