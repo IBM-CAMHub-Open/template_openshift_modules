@@ -40,7 +40,7 @@ resource "null_resource" "config_inventory_file" {
     inline = [
       "set -e",
       "chmod 755 /tmp/config_inventory.sh",
-      "bash -c '/tmp/config_inventory.sh ${var.master_node_hostname} ${var.etcd_node_hostname} ${var.compute_node_hostname} ${var.lb_node_hostname} ${var.infra_node_hostname} ${var.infra_node_ip} ${var.rh_user} ${var.rh_password} ${var.vm_domain_name} ${var.enable_lb} ${var.compute_node_enable_glusterFS} ${var.vm_os_password}'"
+      "bash -c '/tmp/config_inventory.sh ${var.master_node_hostname} ${var.etcd_node_hostname} ${var.compute_node_hostname} ${var.lb_node_hostname} ${var.infra_node_hostname} ${var.infra_node_ip} ${var.rh_user} ${var.rh_password} ${var.vm_domain_name} ${var.enable_lb} ${var.compute_node_enable_glusterfs} ${var.vm_os_password}'"
     ]
   }
 }
