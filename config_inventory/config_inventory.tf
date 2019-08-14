@@ -12,7 +12,7 @@ resource "null_resource" "config_inventory_file" {
     user = "${var.vm_os_user}"
     password =  "${var.vm_os_password}"
     private_key = "${var.private_key}"
-    host = "${var.master_vm_ipv4_address}"
+    host = "${var.master_node_ip}"
     bastion_host        = "${var.bastion_host}"
     bastion_user        = "${var.bastion_user}"
     bastion_private_key = "${length(var.bastion_private_key) > 0 ? base64decode(var.bastion_private_key) : var.bastion_private_key}"
@@ -23,11 +23,11 @@ resource "null_resource" "config_inventory_file" {
 
   provisioner "remote-exec" {
     inline = [
-      "echo -n ${var.master_vm_hostname} > /tmp/old_master.txt",
-      "echo -n ${var.etcd_vm_hostname} > /tmp/old_etcd.txt",
-      "echo -n ${var.compute_vm_hostname} > /tmp/old_compute.txt",
-      "echo -n ${var.lb_vm_hostname} > /tmp/old_lb.txt",
-      "echo -n ${var.infra_vm_hostname} > /tmp/old_infra.txt"
+      "echo -n ${var.master_node_hostname} > /tmp/old_master.txt",
+      "echo -n ${var.etcd_node_hostname} > /tmp/old_etcd.txt",
+      "echo -n ${var.compute_node_hostname} > /tmp/old_compute.txt",
+      "echo -n ${var.lb_node_hostname} > /tmp/old_lb.txt",
+      "echo -n ${var.infra_node_hostname} > /tmp/old_infra.txt"
     ]
   }
 
@@ -40,7 +40,7 @@ resource "null_resource" "config_inventory_file" {
     inline = [
       "set -e",
       "chmod 755 /tmp/config_inventory.sh",
-      "bash -c '/tmp/config_inventory.sh ${var.master_vm_hostname} ${var.etcd_vm_hostname} ${var.compute_vm_hostname} ${var.lb_vm_hostname} ${var.infra_vm_hostname} ${var.infra_vm_ipv4_address} ${var.rh_user} ${var.rh_password} ${var.domain_name} ${var.enable_lb} ${var.compute_enable_glusterFS} ${var.vm_os_password}'"
+      "bash -c '/tmp/config_inventory.sh ${var.master_node_hostname} ${var.etcd_node_hostname} ${var.compute_node_hostname} ${var.lb_node_hostname} ${var.infra_node_hostname} ${var.infra_node_ipv4_address} ${var.rh_user} ${var.rh_password} ${var.domain_name} ${var.enable_lb} ${var.compute_enable_glusterFS} ${var.vm_os_password}'"
     ]
   }
 }

@@ -12,7 +12,7 @@ resource "null_resource" "run_installer" {
     user = "${var.vm_os_user}"
     password =  "${var.vm_os_password}"
     private_key = "${var.private_key}"
-    host = "${var.master_vm_ipv4_address}"
+    host = "${var.master_node_ip}"
     bastion_host        = "${var.bastion_host}"
     bastion_user        = "${var.bastion_user}"
     bastion_private_key = "${length(var.bastion_private_key) > 0 ? base64decode(var.bastion_private_key) : var.bastion_private_key}"

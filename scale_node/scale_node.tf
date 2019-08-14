@@ -8,7 +8,7 @@ resource "null_resource" "scale_node" {
   depends_on = ["null_resource.master_dependsOn"]
 
   triggers {
-    workers = "${join(",", var.compute_vm_ipv4_address)}"
+    workers = "${join(",", var.compute_node_ip)}"
   }
 
   connection {
@@ -17,7 +17,7 @@ resource "null_resource" "scale_node" {
     password =  "${var.vm_os_password}"
     private_key = "${var.private_key}"
     timeout = "30m"
-    host = "${var.master_vm_ipv4_address}"
+    host = "${var.master_node_ip}"
     bastion_host        = "${var.bastion_host}"
     bastion_user        = "${var.bastion_user}"
     bastion_private_key = "${length(var.bastion_private_key) > 0 ? base64decode(var.bastion_private_key) : var.bastion_private_key}"
@@ -28,7 +28,7 @@ resource "null_resource" "scale_node" {
 
   provisioner "remote-exec" {
     inline = [
-      "echo -n ${join(",", var.compute_vm_hostname)} > /tmp/new_compute.txt"    
+      "echo -n ${join(",", var.compute_node_hostname)} > /tmp/new_compute.txt"    
     ]
   }
 

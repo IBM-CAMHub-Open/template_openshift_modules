@@ -25,7 +25,7 @@ Copyright IBM Corp. 2018, 2018
 | vm_folder | Target vSphere folder for virtual machine | string | - | yes |
 | vm_ipv4_address | IPv4 address for vNIC configuration | list | - | yes |
 | vm_ipv4_gateway | IPv4 gateway for vNIC configuration | string | - | yes |
-| vm_ipv4_prefix_length | IPv4 prefix length for vNIC configuration. The value must be a number between 8 and 32 | string | - | yes |
+| vm_ipv4_netmask | IPv4 prefix length for vNIC configuration. The value must be a number between 8 and 32 | string | - | yes |
 | vm_memory | Memory assigned to the virtual machine in megabytes. This value is required to be an increment of 1024 | string | `1024` | no |
 | vm_name | Variable : vm_-name | string | - | yes |
 | network | vSphere port group or network label for virtual machine's vNIC | string | - | yes |

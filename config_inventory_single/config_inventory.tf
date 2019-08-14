@@ -12,7 +12,7 @@ resource "null_resource" "config_inventory_file" {
     user = "${var.vm_os_user}"
     password =  "${var.vm_os_password}"
     private_key = "${var.private_key}"
-    host = "${var.single_vm_ipv4_address}"
+    host = "${var.single_node_ipv4_address}"
     bastion_host        = "${var.bastion_host}"
     bastion_user        = "${var.bastion_user}"
     bastion_private_key = "${length(var.bastion_private_key) > 0 ? base64decode(var.bastion_private_key) : var.bastion_private_key}"
@@ -29,7 +29,7 @@ resource "null_resource" "config_inventory_file" {
     inline = [
       "set -e",
       "chmod 755 /tmp/config_inventory.sh",
-      "bash -c '/tmp/config_inventory.sh ${var.single_vm_hostname} ${var.single_vm_ipv4_address} ${var.domain_name} ${var.rh_user} ${var.rh_password}'"
+      "bash -c '/tmp/config_inventory.sh ${var.single_node_hostname} ${var.single_node_ipv4_address} ${var.domain_name} ${var.rh_user} ${var.rh_password}'"
     ]
   }
 }

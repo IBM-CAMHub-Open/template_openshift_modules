@@ -105,7 +105,7 @@ variable "vm_ipv4_address" {
   type = "list"
 }
 
-variable "vm_ipv4_prefix_length" {
+variable "vm_ipv4_netmask" {
   description = "IPv4 prefix length for vNIC configuration. The value must be a number between 8 and 32"
 }
 
