@@ -4,7 +4,7 @@ set -e
 
 single_hostname=$1
 single_ip=$2
-domain_name=$3
+vm_domain_name=$3
 rh_user=$4
 rh_password=$5
 
@@ -29,12 +29,12 @@ inventory_file=$(
   echo "openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]"
   echo ""
   echo "[masters]"
-  echo "$1.$domain_name"
+  echo "$1.$vm_domain_name"
   echo ""
   echo "[etcd]"
-  echo "$1.$domain_name"
+  echo "$1.$vm_domain_name"
   echo ""
   echo "[nodes]"
-  echo "$1.$domain_name openshift_node_group_name='node-config-all-in-one'"
+  echo "$1.$vm_domain_name openshift_node_group_name='node-config-all-in-one'"
 )
 echo "${inventory_file}" > /etc/ansible/hosts

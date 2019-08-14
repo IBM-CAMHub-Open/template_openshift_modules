@@ -31,7 +31,7 @@ resource "null_resource" "prepare_node" {
     inline = [
       "set -e",
       "chmod 755 /tmp/host_prepare.sh",
-      "bash -c '/tmp/host_prepare.sh ${var.rh_user} ${var.rh_password} ${var.vm_hostname_list} ${var.installer_hostname} ${var.domain_name} ${var.vm_os_password} ${var.compute_hostname}'"
+      "bash -c '/tmp/host_prepare.sh ${var.rh_user} ${var.rh_password} ${var.vm_hostname_list} ${var.installer_hostname} ${var.vm_domain_name} ${var.vm_os_password} ${var.compute_hostname}'"
       #"(sleep 5 && reboot)&"
     ]
   }

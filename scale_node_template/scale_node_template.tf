@@ -35,7 +35,7 @@ resource "null_resource" "scale_node_template" {
     inline = [
       "set -e",
       "chmod 755 /tmp/scale_node_template.sh",
-      "bash -c '/tmp/scale_node_template.sh ${var.domain_name} ${var.vm_os_password} ${join(",", var.node_vm_hostname)}'"
+      "bash -c '/tmp/scale_node_template.sh ${var.vm_domain_name} ${var.vm_os_password} ${join(",", var.node_vm_hostname)}'"
     ]
   }
 

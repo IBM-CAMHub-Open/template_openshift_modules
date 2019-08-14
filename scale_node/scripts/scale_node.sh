@@ -4,7 +4,7 @@ echo "scale_node"
 
 NEWLIST=/tmp/new_compute.txt
 OLDLIST=/tmp/old_compute.txt
-domain_name=$1
+vm_domain_name=$1
 os_password=$2
 
 declare -a newlist
@@ -120,7 +120,7 @@ if [[ -n ${added} ]]; then
     sleep 1200
     for index in "${!added[@]}"
     do
-        sshpass -p $os_password ssh-copy-id -i ~/.ssh/id_rsa.pub -o StrictHostKeyChecking=no ${added[index]}.$domain_name
+        sshpass -p $os_password ssh-copy-id -i ~/.ssh/id_rsa.pub -o StrictHostKeyChecking=no ${added[index]}.$vm_domain_name
     done
     if ! grep -q "new_nodes" /etc/ansible/hosts; then
         sed -i -e '/^\[OSEv3\:vars\]/i new_nodes' /etc/ansible/hosts
@@ -128,19 +128,19 @@ if [[ -n ${added} ]]; then
     fi
     for index in "${!added[@]}"
     do
-        echo "${added[index]}.$domain_name openshift_node_group_name='node-config-compute'" >> /etc/ansible/hosts
+        echo "${added[index]}.$vm_domain_name openshift_node_group_name='node-config-compute'" >> /etc/ansible/hosts
     done
     cd /usr/share/ansible/openshift-ansible
     if ansible-playbook playbooks/openshift-node/scaleup.yml; then
         printf "\033[32m[*] Add new compute node successfully \033[0m\n"
         for index in "${!added[@]}"
         do
-            sed -i -e "/^\[new\_nodes\]/i ${added[index]}.$domain_name openshift_node_group_name='node-config-compute'" /etc/ansible/hosts
+            sed -i -e "/^\[new\_nodes\]/i ${added[index]}.$vm_domain_name openshift_node_group_name='node-config-compute'" /etc/ansible/hosts
         done
         if grep -q "[glusterfs]" /etc/ansible/hosts; then
             for index in "${!added[@]}"
             do
-                sed -i -e "/^\[glusterfs\]/a ${added[index]}.$domain_name glusterfs_devices='[ \"\/dev\/sdb\" ]'" /etc/ansible/hosts
+                sed -i -e "/^\[glusterfs\]/a ${added[index]}.$vm_domain_name glusterfs_devices='[ \"\/dev\/sdb\" ]'" /etc/ansible/hosts
             done
         fi
         # Backup the origin list and replace

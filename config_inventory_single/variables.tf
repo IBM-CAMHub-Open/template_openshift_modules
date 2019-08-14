@@ -3,7 +3,7 @@ variable "vm_os_user"           { type = "string"  description = "Operating Syst
 variable "private_key"          { type = "string"  description = "Private SSH key Details to the Virtual machine"}
 variable "single_node_ipv4_address"       { type = "string"}
 variable "single_node_hostname"           { type = "string"}
-variable "domain_name"           { type = "string"}
+variable "vm_domain_name"           { type = "string"}
 variable "rh_user"              { type = "string" }
 variable "rh_password"          { type = "string" }
 variable "random"               { type = "string"  description = "Random String Generated"}

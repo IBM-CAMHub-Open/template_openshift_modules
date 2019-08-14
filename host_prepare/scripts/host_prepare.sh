@@ -5,7 +5,7 @@ set -x
 hostnamestr=$(echo $3 | sed 's/[][]//g' )
 IFS=',' read -r -a allhostnames <<< "$hostnamestr"
 installer_hostname=$4
-domain_name=$5
+vm_domain_name=$5
 os_password=$6
 compute_hostname=$7
 
@@ -88,9 +88,9 @@ function find_disk()
   fi
 }
 
-if [[ $compute_hostname.$domain_name == $(hostname -f) ]]; then
+if [[ $compute_hostname.$vm_domain_name == $(hostname -f) ]]; then
     gfsdisk=`find_disk`
     touch glusterfs_disk.txt
     echo $gfsdisk > glusterfs_disk.txt
-    sshpass -p $os_password scp -o StrictHostKeyChecking=no glusterfs_disk.txt root@$installer_hostname.$domain_name:/tmp
+    sshpass -p $os_password scp -o StrictHostKeyChecking=no glusterfs_disk.txt root@$installer_hostname.$vm_domain_name:/tmp
 fi

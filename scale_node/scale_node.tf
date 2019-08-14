@@ -41,7 +41,7 @@ resource "null_resource" "scale_node" {
     inline = [
       "set -e",
       "chmod 755 /tmp/scale_node.sh",
-      "bash -c '/tmp/scale_node.sh ${var.domain_name} ${var.vm_os_password}'"
+      "bash -c '/tmp/scale_node.sh ${var.vm_domain_name} ${var.vm_os_password}'"
     ]
   }
 }

@@ -20,7 +20,7 @@ IFS=',' read -r -a infraips <<< "$infrastr2"
 
 rh_user=$7
 rh_password=$8
-domain_name=$9
+vm_domain_name=$9
 enable_lb=${10}
 enable_glusterfs=${11}
 os_password=${12}
@@ -32,7 +32,7 @@ yes y | ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
 yum -y install sshpass
 for index in "${!allhostnames[@]}"
 do
-    sshpass -p $os_password ssh-copy-id -i ~/.ssh/id_rsa.pub -o StrictHostKeyChecking=no ${allhostnames[index]}.$domain_name
+    sshpass -p $os_password ssh-copy-id -i ~/.ssh/id_rsa.pub -o StrictHostKeyChecking=no ${allhostnames[index]}.$vm_domain_name
 done
 
 if [[ ${#computehostnames[@]} < 3 && $enable_glusterfs == "true" ]]; then
@@ -78,50 +78,50 @@ inventory_file=$(
   echo "openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider',}]"
   if [[ $enable_lb == "true" ]]; then
     echo "openshift_master_cluster_method=native"
-    echo "openshift_master_cluster_hostname=${lbhostnames[0]}.$domain_name"
-    echo "openshift_master_cluster_public_hostname=${lbhostnames[0]}.$domain_name"
+    echo "openshift_master_cluster_hostname=${lbhostnames[0]}.$vm_domain_name"
+    echo "openshift_master_cluster_public_hostname=${lbhostnames[0]}.$vm_domain_name"
   fi
   echo ""
   if [[ $enable_glusterfs == "true" ]]; then
     echo "[glusterfs]"
     for index in "${!computehostnames[@]}"
     do
-      echo "${computehostnames[index]}.$domain_name glusterfs_devices='[ \"$disk\" ]'"
+      echo "${computehostnames[index]}.$vm_domain_name glusterfs_devices='[ \"$disk\" ]'"
     done
     echo ""
   fi
   echo "[masters]"
   for index in "${!masterhostnames[@]}"
   do
-    echo "${masterhostnames[index]}.$domain_name"
+    echo "${masterhostnames[index]}.$vm_domain_name"
   done
   echo ""
   echo "[etcd]"
   for index in "${!etcdhostnames[@]}"
   do
-    echo "${etcdhostnames[index]}.$domain_name"
+    echo "${etcdhostnames[index]}.$vm_domain_name"
   done
   echo ""
   if [[ $enable_lb == "true" ]]; then
     echo "[lb]"
     for index in "${!lbhostnames[@]}"
     do
-      echo "${lbhostnames[index]}.$domain_name"
+      echo "${lbhostnames[index]}.$vm_domain_name"
     done
     echo ""
   fi
   echo "[nodes]"
   for index in "${!infrahostnames[@]}"
   do
-    echo "${infrahostnames[index]}.$domain_name openshift_node_group_name='node-config-infra'"
+    echo "${infrahostnames[index]}.$vm_domain_name openshift_node_group_name='node-config-infra'"
   done
   for index in "${!masterhostnames[@]}"
   do
-    echo "${masterhostnames[index]}.$domain_name openshift_node_group_name='node-config-master'"
+    echo "${masterhostnames[index]}.$vm_domain_name openshift_node_group_name='node-config-master'"
   done
   for index in "${!computehostnames[@]}"
   do
-    echo "${computehostnames[index]}.$domain_name openshift_node_group_name='node-config-compute'"
+    echo "${computehostnames[index]}.$vm_domain_name openshift_node_group_name='node-config-compute'"
   done
 )
 echo "${inventory_file}" > /etc/ansible/hosts

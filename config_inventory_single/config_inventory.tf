@@ -29,7 +29,7 @@ resource "null_resource" "config_inventory_file" {
     inline = [
       "set -e",
       "chmod 755 /tmp/config_inventory.sh",
-      "bash -c '/tmp/config_inventory.sh ${var.single_node_hostname} ${var.single_node_ipv4_address} ${var.domain_name} ${var.rh_user} ${var.rh_password}'"
+      "bash -c '/tmp/config_inventory.sh ${var.single_node_hostname} ${var.single_node_ipv4_address} ${var.vm_domain_name} ${var.rh_user} ${var.rh_password}'"
     ]
   }
 }

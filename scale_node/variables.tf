@@ -4,6 +4,6 @@ variable "master_node_ip" { type="string"      description = "Master IPv4 Addres
 variable "private_key"          { type = "string"  description = "Private SSH key Details to the Virtual machine"}
 variable "compute_node_ip"       { type = "list"}
 variable "compute_node_hostname"   { type = "list"}
-variable "domain_name"          { type = "string"}
+variable "vm_domain_name"          { type = "string"}
 variable "random"               { type = "string"  description = "Random String Generated"}
 variable "dependsOn"            { default = "true" description = "Boolean for dependency"}
