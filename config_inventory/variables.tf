@@ -12,6 +12,6 @@ variable "infra_node_hostname"             { type = "string"}
 variable "infra_node_ip"         { type = "string"}
 variable "rh_user"              { type = "string" }
 variable "rh_password"          { type = "string" }
-variable "compute_enable_glusterFS"          { type = "string"}
+variable "compute_node_enable_glusterFS"          { type = "string"}
 variable "random"               { type = "string"  description = "Random String Generated"}
 variable "dependsOn"            { default = "true" description = "Boolean for dependency"}
