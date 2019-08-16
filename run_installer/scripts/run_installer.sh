@@ -33,7 +33,10 @@ if ansible-playbook -vvv playbooks/prerequisites.yml ; then
         oc login -u system:admin -n default
         echo "Successfully logged in as system:admin. Assigning cluster-admin role to $1 user"
         oc adm policy add-cluster-role-to-user cluster-admin $1
-        echo "Successfully assigned cluster-admin role to $1 user"
+        echo "Successfully assigned cluster-admin role to $1 user. Logging in as $1 user"
+        oc login -u $1 -p $2
+        echo "Successfully logged in as $1. Listing the cluster nodes"
+        oc get nodes
         #oc project default
         printf "\033[32m[*] User Account Created Successfully \033[0m\n"
     else
