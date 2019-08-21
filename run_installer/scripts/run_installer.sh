@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#comment out the pipelining in /usr/share/ansible/openshift-ansible/ansible.cfg
-sed -i 's/^\(pipelining.*\)/#\1/g' /usr/share/ansible/openshift-ansible/ansible.cfg
 cd /usr/share/ansible/openshift-ansible
 if ansible-playbook -vvv playbooks/prerequisites.yml ; then
     printf "\033[32m[*] Prerequisites Succeeded \033[0m\n"
