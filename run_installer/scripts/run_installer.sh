@@ -1,7 +1,10 @@
 #!/bin/bash
 
-#uncomment the log_path in /etc/ansible/ansible.cfg
-sed -i '/log_path/s/^#//g' /etc/ansible/ansible.cfg
+#uncomment the log_path in /usr/share/ansible/openshift-ansible/ansible.cfg
+sed -i '/log_path/s/^#//g' /usr/share/ansible/openshift-ansible/ansible.cfg
+
+#comment out the pipelining in /usr/share/ansible/openshift-ansible/ansible.cfg
+sed -i 's/^\(pipelining.*\)/#\1/g' /usr/share/ansible/openshift-ansible/ansible.cfg
 
 cd /usr/share/ansible/openshift-ansible
 if ansible-playbook -vvv playbooks/prerequisites.yml ; then
