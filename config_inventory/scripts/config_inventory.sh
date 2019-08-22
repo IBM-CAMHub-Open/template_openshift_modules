@@ -27,7 +27,10 @@ os_password=${12}
 disk=$(head -n 1 /tmp/glusterfs_disk.txt)
 
 # SSH key
-allhostnames=( "${masterhostnames[@]}" "${etcdhostnames[@]}" "${computehostnames[@]}" "${lbhostnames[@]}" "${infrahostnames[@]}" )
+allhostnames=( "${masterhostnames[@]}" "${etcdhostnames[@]}" "${computehostnames[@]}" "${infrahostnames[@]}" )
+if [[ $enable_lb == "true" ]]; then
+  allhostnames=( "${allhostnames[@]}" "${lbhostnames[@]}" )
+fi
 yes y | ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
 yum -y install sshpass
 for index in "${!allhostnames[@]}"

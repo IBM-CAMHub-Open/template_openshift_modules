@@ -43,7 +43,7 @@ subscription-manager repos \
     --enable="rhel-7-server-ansible-2.6-rpms"
 
 # Install base packages
-yum -y install wget git net-tools bind-utils yum-utils iptables-services bridge-utils bash-completion kexec-tools sos psacct
+yum -y install wget git net-tools bind-utils yum-utils iptables-services bridge-utils bash-completion kexec-tools sos psacct sshpass
 yum -y update
 yum -y install openshift-ansible
 
