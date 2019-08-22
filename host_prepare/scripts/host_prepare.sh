@@ -48,7 +48,7 @@ yum -y update
 yum -y install openshift-ansible
 
 #comment out the pipelining in /usr/share/ansible/openshift-ansible/ansible.cfg
-sed -i 's/^\(pipelining.*\)/#\1/g' /usr/share/ansible/openshift-ansible/ansible.cfg
+#sed -i 's/^\(pipelining.*\)/#\1/g' /usr/share/ansible/openshift-ansible/ansible.cfg
 
 # Install docker 1.31.1
 yum -y remove docker \
