@@ -1,5 +1,8 @@
 #!/bin/bash
 
+masterstr=$(echo $3| sed 's/[][]//g' )
+IFS=',' read -r -a masterips <<< "$masterstr"
+
 cd /usr/share/ansible/openshift-ansible
 if ansible-playbook -vvv playbooks/prerequisites.yml ; then
     printf "\033[32m[*] Prerequisites Succeeded \033[0m\n"
@@ -8,6 +11,13 @@ if ansible-playbook -vvv playbooks/prerequisites.yml ; then
         yum -y install httpd-tools
         touch /etc/origin/master/htpasswd
         htpasswd -b /etc/origin/master/htpasswd $1 $2
+        # copy htpasswd file to other master nodes if needed
+        if [[ ${#masterips[@]} > 1 ]]; then
+            for index in "${!masterips[@]}"
+            do
+                scp /etc/origin/master/htpasswd root@${masterips[index]}:/etc/origin/master/htpasswd
+            done
+        fi
         # restart openshift
         master-restart api
         master-restart controllers

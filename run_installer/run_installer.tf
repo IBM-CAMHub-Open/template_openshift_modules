@@ -12,7 +12,7 @@ resource "null_resource" "run_installer" {
     user = "${var.vm_os_user}"
     password =  "${var.vm_os_password}"
     private_key = "${var.private_key}"
-    host = "${var.master_node_ip}"
+    host = "${element(var.master_node_ip, 0)}"
     bastion_host        = "${var.bastion_host}"
     bastion_user        = "${var.bastion_user}"
     bastion_private_key = "${length(var.bastion_private_key) > 0 ? base64decode(var.bastion_private_key) : var.bastion_private_key}"
@@ -30,7 +30,7 @@ resource "null_resource" "run_installer" {
     inline = [
       "set -e",
       "chmod 755 /tmp/run_installer.sh",
-      "bash -c '/tmp/run_installer.sh ${var.openshift_user} ${var.openshift_password}'"
+      "bash -c '/tmp/run_installer.sh ${var.openshift_user} ${var.openshift_password} ${join(",", var.master_node_ip)}'"
     ]
   }
 }
