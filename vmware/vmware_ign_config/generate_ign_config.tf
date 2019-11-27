@@ -39,7 +39,17 @@ resource "null_resource" "generate_ign_config" {
   provisioner "file" {
     source = "${path.module}/scripts/sec_bootstrap.ign"
     destination = "/tmp/sec_bootstrap.ign"
-  }  
+  } 
+  
+  provisioner "file" {
+    source = "${path.module}/scripts/sec_master.ign"
+    destination = "/tmp/sec_master.ign"
+  }
+  
+  provisioner "file" {
+    source = "${path.module}/scripts/sec_worker.ign"
+    destination = "/tmp/sec_worker.ign"
+  }     
   
   provisioner "file" {
     source = "${path.module}/scripts/get_interfaces.sh"
@@ -74,7 +84,7 @@ resource "camc_scriptpackage" "get_bootstrap_ign" {
 
 resource "camc_scriptpackage" "get_master_ign" {
 	depends_on = ["camc_scriptpackage.get_bootstrap_ign"]
-  	program = ["sudo cat /installer/allmaster.ign"]
+	program = ["sudo cat /installer/allmaster.ign"]
   	on_create = true
     remote_user = "${var.vm_os_user}"
     remote_password =  "${var.vm_os_password}"

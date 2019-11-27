@@ -24,6 +24,8 @@ function create_install_config(){
 	SSH_KEY=`sudo cat ~/.ssh/id_rsa_ocp.pub`
 	sudo mv /tmp/install-config.yaml.tmpl /installer/install-config.yaml
 	sudo mv /tmp/sec_bootstrap.ign /installer/sec_bootstrap.ign
+	sudo mv /tmp/sec_master.ign /installer/sec_master.ign
+	sudo mv /tmp/sec_worker.ign /installer/sec_worker.ign		
 	sudo sed -i -e "s/@domain@/${DOMAIN}/" /installer/install-config.yaml
 	sudo sed -i -e "s/@controlnodes@/${CONTROL_NODES}/" /installer/install-config.yaml
 	sudo sed -i -e "s/@clustername@/${CLUSTER_NAME}/" /installer/install-config.yaml
@@ -45,23 +47,33 @@ function create_install_config(){
 		echo "Web server folder /var/www/html not found. You must copy the boostrap.ign to web server from terraform output."
 	fi
 	for (( i=0;i<$CONTROL_NODES;i++ )); do
-		sudo cp /installer/master.ign /installer/master${i}.ign
+		#sudo cp /installer/master.ign /installer/master${i}.ign
+		sudo cp /installer/sec_master.ign /installer/sec_master${i}.ign
+		sudo sed -i -e "s|@infra_ip@|${INFRA_IP}|" /installer/sec_master${i}.ign
 	    CONTROL_HOST=etcd-${i}.${CLUSTER_NAME}.${DOMAIN}
-		sudo sed -i -e 's|"storage":{}|"storage": {"files": [{"filesystem": "root","group": {},"path": "/etc/hostname","user": {},"contents": {"source": "data:text/plain;charset=utf-8,controlhost","verification": {}},"mode": 420}]}|' /installer/master${i}.ign
-		sudo sed -i -e "s|controlhost|$CONTROL_HOST|" /installer/master${i}.ign
+		#sudo sed -i -e 's|"storage":{}|"storage": {"files": [{"filesystem": "root","group": {},"path": "/etc/hostname","user": {},"contents": {"source": "data:text/plain;charset=utf-8,controlhost","verification": {}},"mode": 420}]}|' /installer/master${i}.ign
+		#sudo sed -i -e "s|controlhost|$CONTROL_HOST|" /installer/master${i}.ign
+		sudo sed -i -e 's|"storage": {}|"storage": {"files": [{"filesystem": "root","group": {},"path": "/etc/hostname","user": {},"contents": {"source": "data:text/plain;charset=utf-8,controlhost","verification": {}},"mode": 420}]}|' /installer/sec_master${i}.ign
+		sudo sed -i -e "s|controlhost|$CONTROL_HOST|" /installer/sec_master${i}.ign			
 	done
 	for (( i=0;i<$CONTROL_NODES;i++ )); do
-		sudo cat /installer/master${i}.ign | base64 -w0 >> /installer/allmaster.ign
+		#sudo cat /installer/master${i}.ign | base64 -w0 >> /installer/allmaster.ign
+		sudo cat /installer/sec_master${i}.ign | base64 -w0 >> /installer/allmaster.ign
 		echo -n , | sudo tee -a /installer/allmaster.ign
 	done
 	for (( i=0;i<$COMPUTE_NODES;i++ )); do
-		sudo cp /installer/worker.ign /installer/worker${i}.ign
+		#sudo cp /installer/worker.ign /installer/worker${i}.ign
+		sudo cp /installer/sec_worker.ign /installer/sec_worker${i}.ign
+		sudo sed -i -e "s|@infra_ip@|${INFRA_IP}|" /installer/sec_worker${i}.ign
 		COMPUTE_HOST=compute-${i}.${CLUSTER_NAME}.${DOMAIN}
-		sudo sed -i -e 's|"storage":{}|"storage": {"files": [{"filesystem": "root","group": {},"path": "/etc/hostname","user": {},"contents": {"source": "data:text/plain;charset=utf-8,computehost","verification": {}},"mode": 420}]}|' /installer/worker${i}.ign
-		sudo sed -i -e "s|computehost|$COMPUTE_HOST|" /installer/worker${i}.ign			
+		#sudo sed -i -e 's|"storage":{}|"storage": {"files": [{"filesystem": "root","group": {},"path": "/etc/hostname","user": {},"contents": {"source": "data:text/plain;charset=utf-8,computehost","verification": {}},"mode": 420}]}|' /installer/worker${i}.ign
+		#sudo sed -i -e "s|computehost|$COMPUTE_HOST|" /installer/worker${i}.ign
+		sudo sed -i -e 's|"storage": {}|"storage": {"files": [{"filesystem": "root","group": {},"path": "/etc/hostname","user": {},"contents": {"source": "data:text/plain;charset=utf-8,computehost","verification": {}},"mode": 420}]}|' /installer/sec_worker${i}.ign
+		sudo sed -i -e "s|computehost|$COMPUTE_HOST|" /installer/sec_worker${i}.ign						
 	done	
 	for (( i=0;i<$COMPUTE_NODES;i++ )); do
-		cat /installer/worker${i}.ign | base64 -w0 >> /installer/allworker.ign
+		#cat /installer/worker${i}.ign | base64 -w0 >> /installer/allworker.ign
+		cat /installer/sec_worker${i}.ign | base64 -w0 >> /installer/allworker.ign
 		echo -n , | sudo tee -a /installer/allworker.ign
 	done		
 }

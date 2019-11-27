@@ -13,6 +13,8 @@ do
 		sleep 60
 	else
 		echo "Internal API can be reached."
+		sudo curl -o /installer/${TYPE} -k https://api-int.${CLUSTER_NAME}.${DOMAIN_NAME}:22623/config/${TYPE}
+		sudo cp /installer/${TYPE} /var/www/html/${TYPE}.ign
 		exit 0
 	fi	
 done
