@@ -42,4 +42,4 @@ Copyright IBM Corp. 2019, 2019
 
 | Name | Description |
 |------|-------------|
-| dependsOn | Output Parameter when Module Complete |
+| dependsOn | Output Parameter set when the module execution is completed |

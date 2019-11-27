@@ -1,6 +1,6 @@
 output "dependsOn" { 
 	value = "${null_resource.installed.id}"
-	description="Output Parameter when Module Complete"
+	description="Output Parameter set when the module execution is completed"
 }
 
 output "console"{
@@ -12,5 +12,5 @@ output "console"{
 output "password"{
   depends_on = ["camc_scriptpackage.get_creds"]
   value = "${camc_scriptpackage.get_creds.result["Password"]}"
-  description="Base64 encoded kubeadmin password"
+  description="kubeadmin password"
 } 

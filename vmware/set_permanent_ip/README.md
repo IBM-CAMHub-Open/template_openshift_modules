@@ -2,13 +2,10 @@
 Copyright IBM Corp. 2019, 2019
 --->
 
-# Install and Config Apache Web Server 
+# Sets permanent IP based on MAC in dnsmasq
 
-This module downloads, installs and configures Apache Web Server. This web server hosts the bootstrap, control and compute ignition files.
-
-## OS requirements
-
-Supported On RHEL 7.x Linux
+This module must be used to persist the IP of OCP cluster nodes based on generated MAC after cluster is up and running.
+This ensures DHCP always returns the same IP. 
 
 ## Inputs
 
@@ -16,8 +13,9 @@ Supported On RHEL 7.x Linux
 |------|-------------|:----:|:-----:|:-----:|
 | vm_ipv4_address | IPv4 address for vNIC configuration | string | - | yes |
 | vm_os_password | Password for the Operating System User to access virtual machine | string | - | yes |
-| vm_os_private_key |  | string | `` | no |
+| vm_os_private_key | Private key for Operating System User to access virtual machine | string | `` | no |
 | vm_os_user | User for the Operating System User to access virtual machine | string | - | yes |
+| cluster_ipv4_addresses | Comma separated IPv4 address for OCP cluster nodes vNIC configuration | string | - | yes |
 | dependsOn | Module depends variable to wait on. | string | - | yes |
 
 ## Outputs

@@ -1,6 +1,6 @@
 output "dependsOn" { 
 	value = "${null_resource.ign_config_generated.id}" 
-	description="Output Parameter when Module Complete"
+	description="Output Parameter set when the module execution is completed"
 }
 
 output "bootstrap_ign"{

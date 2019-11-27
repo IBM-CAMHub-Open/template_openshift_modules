@@ -2,9 +2,10 @@
 Copyright IBM Corp. 2019, 2019
 --->
 
-# Install and Config Apache Web Server 
+# Configure OCP Image Registry
 
-This module downloads, installs and configures Apache Web Server. This web server hosts the bootstrap, control and compute ignition files.
+This module creates storage class and persistent volume using the NFS folder /var/nfs/registry on infra node.
+Then it configures the image registry to use the configured persistent volume to as image registry.
 
 ## OS requirements
 
@@ -18,6 +19,8 @@ Supported On RHEL 7.x Linux
 | vm_os_password | Password for the Operating System User to access virtual machine | string | - | yes |
 | vm_os_private_key |  | string | `` | no |
 | vm_os_user | User for the Operating System User to access virtual machine | string | - | yes |
+| nfs_ipv4_address | IP of NFS server. By default uses intra node as NFS server | string | - | yes |
+| nfs_path | Path to NFS folder. | string | /var/nfs/registry | yes |
 | dependsOn | Module depends variable to wait on. | string | - | yes |
 
 ## Outputs

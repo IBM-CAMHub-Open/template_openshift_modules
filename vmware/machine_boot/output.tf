@@ -8,5 +8,5 @@ output "name" {
 
 output "dependsOn" { 
 	value = "${null_resource.machine_created.id}"
-	description="Output Parameter when Module Complete"
+	description="Output Parameter set when the module execution is completed"
 }

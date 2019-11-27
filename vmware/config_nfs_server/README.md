@@ -4,6 +4,12 @@ Copyright IBM Corp. 2019, 2019
 
 # Config NFS Server Module
 
+Installs and configures NFS server for image registry storage (image-regisry operator). By default this is done on Infra node and the NFS folder is /var/nfs/registry.
+
+## OS requirements
+
+Supported On RHEL 7.x Linux
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -19,4 +25,4 @@ Copyright IBM Corp. 2019, 2019
 
 | Name | Description |
 |------|-------------|
-| dependsOn | Output Parameter when Module Complete |
+| dependsOn | Output Parameter set when the module execution is completed |

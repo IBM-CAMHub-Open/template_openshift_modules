@@ -4,6 +4,13 @@ Copyright IBM Corp. 2019, 2019
 
 # Install and Configure HAProxy LB Server Module
 
+This modules installs HAProxy and configures as LB server for the following OCP URLs:
+api-int, api and apps
+
+## OS requirements
+
+Supported On RHEL 7.x Linux
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -21,8 +28,9 @@ Copyright IBM Corp. 2019, 2019
 | remove_api_url | Boolean to remove LB nodes from api. If set to true, then install, configure_api_url, configure_app_url and remove_app_url must be false or empty. | string | false | no
 | remove_app_url | Boolean to remove LB nodes from app. If set to true, then install, configure_api_url, configure_app_url and remove_api_url must be false or empty. | string | false | no
 | is_boot | Boolean to indicate boot node. Must be set to true if LB rule is for boot node.  | string | false | no
+
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| dependsOn | Output Parameter when Module Complete |
+| dependsOn | Output Parameter set when the module execution is completed |
