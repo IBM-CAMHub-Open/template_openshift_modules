@@ -3,6 +3,9 @@ resource "null_resource" "set_permanent_ip_dependsOn" {
     # Hack to force dependencies to work correctly. Must use the dependsOn var somewhere in the code for dependencies to work. Contain value which comes from previous module.
 	  command = "echo The dependsOn output is ${var.dependsOn}"
   }
+  triggers{
+  	cluster_ipv4_addresses_changed = "${var.cluster_ipv4_addresses}"
+  }
 }
 
 resource "null_resource" "set_permanent_ip" {
@@ -19,6 +22,10 @@ resource "null_resource" "set_permanent_ip" {
     bastion_port        = "${var.bastion_port}"
     bastion_host_key    = "${var.bastion_host_key}"
     bastion_password    = "${var.bastion_password}"        
+  }
+  
+  triggers{
+  	cluster_ipv4_addresses_changed = "${var.cluster_ipv4_addresses}"
   }
 
   provisioner "file" {

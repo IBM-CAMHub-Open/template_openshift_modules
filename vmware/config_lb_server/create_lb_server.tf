@@ -63,6 +63,10 @@ resource "null_resource" "configapi" {
     destination = "/tmp/lb_api.tmpl"
   }
   
+  #triggers{
+  #	vm_ipv4_controlplane_addresses_changed="${var.vm_ipv4_controlplane_addresses}"
+  #}
+  
   provisioner "remote-exec" {
     inline = [
       "set -e",
@@ -129,6 +133,10 @@ resource "null_resource" "configapp" {
     source = "${path.module}/scripts/lb_app.tmpl"
     destination = "/tmp/lb_app.tmpl"
   }
+  
+  triggers{
+  	vm_ipv4_worker_addresses_changed="${var.vm_ipv4_worker_addresses}"
+  }  
   
   provisioner "remote-exec" {
     inline = [

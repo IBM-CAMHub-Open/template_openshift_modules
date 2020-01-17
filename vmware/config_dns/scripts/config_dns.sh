@@ -110,29 +110,62 @@ function addClusterDnsRecords() {
 function addNodeDnsRecords() {
 	A_NODE_IP=$1
 	A_NODE_NAME=$2
+	CHANGED=false
     if [ "${ACTION}" == "addmaster" ]; then
-        ## Determine next available index based on last index of any previously added master nodes
-        index=0
-        lastIndex=$(cat ${CONFIG_FILE} | grep srv-host=_etcd | awk -F',etcd-' '{print $2}' | cut -d'.' -f1 | sort -nr | head -n1)
-        if [ ! -z ${lastIndex} ]; then
-            ## Increment index to next available number
-            index=$((lastIndex+1))
-        fi
-    
-        ## Add service for master node to config file
-        port=2380
-        priority=0
-        weight=10
-        masterNode="etcd-${index}.${CLUSTER_NAME}.${DOMAIN_NAME}"
-        service="_etcd-server-ssl._tcp.${CLUSTER_NAME}.${DOMAIN_NAME}"
-        echo "srv-host=${service},${masterNode},${port},${priority},${weight}" >> ${CONFIG_FILE}
-        
-        ## Add IP address for master node to hosts file
-        echo "${A_NODE_IP}  ${masterNode}  ${A_NODE_NAME}" >> ${HOSTS_FILE}
+    	if grep -q "$A_NODE_IP " ${HOSTS_FILE}
+    	then
+    		echo "addNodeDnsRecords Master IP ${A_NODE_IP} added to hosts file and DNS file. Skip ${A_NODE_IP}."
+    	else
+	        ## Determine next available index based on last index of any previously added master nodes
+	        index=0
+	        lastIndex=$(cat ${CONFIG_FILE} | grep srv-host=_etcd | awk -F',etcd-' '{print $2}' | cut -d'.' -f1 | sort -nr | head -n1)
+	        if [ ! -z ${lastIndex} ]; then
+	            ## Increment index to next available number
+	            index=$((lastIndex+1))
+	        fi
+	    
+	        ## Add service for master node to config file
+	        port=2380
+	        priority=0
+	        weight=10
+	        masterNode="etcd-${index}.${CLUSTER_NAME}.${DOMAIN_NAME}"
+	        service="_etcd-server-ssl._tcp.${CLUSTER_NAME}.${DOMAIN_NAME}"
+	        line=srv-host=${service},${masterNode},${port},${priority},${weight}
+	        
+			if grep -Fxq "$line" ${CONFIG_FILE}
+			then
+	    		echo "addNodeDnsRecords $line found, do not add to dnsmasq.conf"
+			else
+	   			echo "addNodeDnsRecords $line not found, add to dnsmasq.conf"
+	   			echo "$line" >> ${CONFIG_FILE}
+	   			CHANGED=true
+			fi
+	        ## Add IP address for master node to hosts file
+	        line="${A_NODE_IP}  ${masterNode}  ${A_NODE_NAME}"
+			if grep -Fxq "$line" ${HOSTS_FILE}
+			then
+	    		echo "addNodeDnsRecords $line found, do not add to ${HOSTS_FILE}"
+			else
+	   			echo "addNodeDnsRecords $line not found, add to ${HOSTS_FILE}"
+	   			echo "$line" >> ${HOSTS_FILE}
+	   			CHANGED=true
+			fi
+		fi
     elif [ "${ACTION}" == "addworker" ]; then
         ## Add IP address for worker node to hosts file
-        echo "${A_NODE_IP}  ${A_NODE_NAME}.${CLUSTER_NAME}.${DOMAIN_NAME}" >> ${HOSTS_FILE}
-    fi
+        line="${A_NODE_IP}  ${A_NODE_NAME}.${CLUSTER_NAME}.${DOMAIN_NAME}"
+		if grep -Fxq "$line" ${HOSTS_FILE}
+		then
+    		echo "addNodeDnsRecords $line found, do not add to ${HOSTS_FILE}"
+		else
+   			echo "addNodeDnsRecords $line not found, add to ${HOSTS_FILE}"
+   			echo "$line" >> ${HOSTS_FILE}
+   			CHANGED=true
+		fi        
+    fi  
+    if [[ "$CHANGED" == "true" ]]; then
+    	touch /tmp/.restart_dnsmasq_dns
+	fi   
 }
 
 ## Configure dnsmasq for DHCP using given cluster information
@@ -156,10 +189,12 @@ EOT
 
 ## Enable and start dnsmasq
 function startDnsmasq() {
-    echo "Starting dnsmasq..."
+	now=$(date)
+    echo "${now} Starting dnsmasq..."
     sudo systemctl stop   dnsmasq
     sudo systemctl enable dnsmasq
     sudo systemctl start  dnsmasq
+    echo "${now} Started dnsmasq..."
 }
 
 
@@ -232,6 +267,7 @@ function verifyInputs() {
 
 ## Perform the requested action
 function performAction() {
+	echo "performAction Perform ${ACTION}"
     ## Determine the platform
     identifyPlatform
     
@@ -241,23 +277,80 @@ function performAction() {
         installDnsmasq
         configureDnsmasq
         addClusterDnsRecords
+    	## Configuration and/or DNS records have been updated; (Re)Start dnsmasq
+    	startDnsmasq        
     fi
     
     ## Configure DHCP
     if [ "${ACTION}" == "dhcp" ]; then
         configureDhcp
+		## Configuration and/or DNS records have been updated; (Re)Start dnsmasq
+    	startDnsmasq        
     fi
     
-    ## Add DNS record for node
+    ## Add / Remove DNS record for node
     if [ "${ACTION}" == "addmaster"  -o  "${ACTION}" == "addworker" ]; then
     	NUM_IPS=${#nodeiparray[@]}
     	for ((i=0; i < ${NUM_IPS}; i++)); do
         	addNodeDnsRecords ${nodeiparray[i]} ${nodenamearray[i]}
     	done
+    	
+    	#Clean up removed entries -- scale down
+		if [ "${ACTION}" == "addmaster" ]; then
+			CONTROL_IPS=`cat /etc/hosts | grep -v 192.168.1.1 | grep 192.168.1 |  grep control-plane- | awk '{ print $1}'`
+			CONTROL_IP_ARRAY=($CONTROL_IPS)
+			
+			
+			for A_CURRENT_IP in "${CONTROL_IP_ARRAY[@]}"; do
+				found=false
+				for A_NEW_IP in "${nodeiparray[@]}"; do
+					if [[ "$A_CURRENT_IP" == "$A_NEW_IP" ]]; then
+						echo "performAction Control plane IP ${A_CURRENT_IP} is present in current list"
+						found=true
+						break
+					fi
+				done
+				if [[ $found == "false" ]]; then
+					echo "performAction Control IP ${A_CURRENT_IP} not in current list"
+					HOST=`cat /etc/hosts | grep "${A_CURRENT_IP} " | awk '{ print $2}'`
+					sed -i "/${A_CURRENT_IP} /d" /etc/hosts
+					sed -i "/,${A_CURRENT_IP}$/d" /etc/dnsmasq.conf
+					sed -i "/,${HOST},/d" /etc/dnsmasq.conf
+					sudo touch /installer/.restart_dnsmasq
+				fi
+			done
+		fi
+		
+		if [ "${ACTION}" == "addworker" ]; then
+			COMPUTE_IPS=`cat /etc/hosts | grep -v 192.168.1.1 | grep 192.168.1 |  grep compute- | awk '{ print $1}'`
+			COMPUTE_IP_ARRAY=($COMPUTE_IPS)		   	
+			
+			for A_CURRENT_IP in "${COMPUTE_IP_ARRAY[@]}"; do
+				found=false
+				for A_NEW_IP in "${nodeiparray[@]}"; do
+					if [[ "$A_CURRENT_IP" == "$A_NEW_IP" ]]; then
+						echo "performAction Compute IP ${A_CURRENT_IP} is present in current list"
+						found=true
+						break
+					fi
+				done
+				if [[ $found == "false" ]]; then
+					echo "performAction Compute IP ${A_CURRENT_IP} not in current list"
+					HOST=`cat /etc/hosts | grep "${A_CURRENT_IP} " | awk '{ print $2}'`
+					sed -i "/${A_CURRENT_IP} /d" /etc/hosts		
+					sed -i "/,${A_CURRENT_IP}$/d" /etc/dnsmasq.conf		
+					touch /tmp/.restart_dnsmasq_dns
+				fi
+			done
+		fi
+		
+		if [ -f "/tmp/.restart_dnsmasq_dns" ]; then
+			## Configuration and/or DNS records have been updated; (Re)Start dnsmasq
+    		startDnsmasq
+    		rm /tmp/.restart_dnsmasq_dns
+		fi
     fi
     
-    ## Configuration and/or DNS records have been updated; (Re)Start dnsmasq
-    startDnsmasq
 }
 
 ## Gather and verify information provided via the command line parameters
@@ -283,8 +376,15 @@ if [ "${ACTION}" != "setup"  -a  "${ACTION}" != "dhcp"  -a  "${ACTION}" != "addm
     echo "${WARN_ON}Action (e.g. setup, dhcp, addMaster, addWorker) has not been specified; Exiting...${WARN_OFF}"
     exit 1
 fi
-IFS=',' read -a nodeiparray <<< "${NODE_IP}"
+IFS=',' read -a NODEIPARR <<< "${NODE_IP}"
+nodeiparray=()
+for A_NODE_IP in "${NODEIPARR[@]}"; do
+        if [[ $A_NODE_IP == "192.168.1"* ]]; then
+                nodeiparray+=( $A_NODE_IP )
+        fi
+done
 IFS=',' read -a nodenamearray <<< "${NODE_NAME}"
+echo "IPs to process ${nodeiparray[*]}"
 verifyInputs
 
 ## Default variable values

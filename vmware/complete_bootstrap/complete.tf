@@ -20,6 +20,13 @@ resource "null_resource" "complete_bootstrap" {
     bastion_host_key    = "${var.bastion_host_key}"
     bastion_password    = "${var.bastion_password}"     
   }
+  
+  triggers{
+  	number_nodes_changed = "${var.number_nodes}"
+  	vm_ipv4_worker_addresses_changed = "${var.vm_ipv4_worker_addresses}"
+  	#vm_ipv4_controlplane_addresses_changed = "${var.vm_ipv4_controlplane_addresses}" 
+  	
+  }  
 
   provisioner "file" {
     source = "${path.module}/scripts/complete_bootstrap.sh"

@@ -94,6 +94,10 @@ resource "null_resource" "add_master_node_dns_record" {
     source = "${path.module}/scripts/config_dns.sh"
     destination = "/tmp/config_dns.sh"
   }
+  
+  #triggers {
+  #	control_node_changed = "${var.node_ips}"
+  #}
 
   provisioner "remote-exec" {
     inline = [
@@ -125,6 +129,10 @@ resource "null_resource" "add_worker_node_dns_record" {
   provisioner "file" {
     source = "${path.module}/scripts/config_dns.sh"
     destination = "/tmp/config_dns.sh"
+  }
+  
+  triggers {
+  	compute_node_changed = "${var.node_ips}"
   }
 
   provisioner "remote-exec" {

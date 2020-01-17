@@ -7,8 +7,8 @@ variable "instance_count" {
 }
 
 variable "ignition" {
-  type    = "list"
-  default = []
+  type    = "string"
+  default = "" 
 }
 
 variable "resource_pool_id" {
@@ -65,4 +65,37 @@ variable "dependsOn" {
 variable "wait_for_guest_net_timeout" {
   default = "5"
   description = "Wait for IP to show up"
+}
+
+variable "vm_os_password" {
+  type = "string"
+  description = "Password for the Operating System User to access virtual machine"
+}
+variable "vm_os_user" {
+  type = "string"
+  description = "User for the Operating System User to access virtual machine"
+}
+variable "vm_ipv4_address" {
+  description = "IPv4 address for vNIC configuration"
+  type = "string"
+}
+
+variable "vm_os_private_key_base64" {
+  default = ""
+  description = "Base64 encoded key"
+}
+
+variable "domain" {
+  type = "string"
+  description = "OCP Base domain name"
+}
+
+variable "clustername" {
+  type = "string"
+  description = "OCP Cluster name"
+}
+
+variable "instance_type" {
+  type = "string"
+  default = "boot"
 }

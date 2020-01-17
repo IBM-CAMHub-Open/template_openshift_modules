@@ -30,3 +30,13 @@ variable "number_nodes" {
   description = "Number of nodes"
   type = "string"
 }
+variable "vm_ipv4_controlplane_addresses" {
+  description = "Comma separated IPv4 address for control or boot nodes. Required if configure_api_url or remove_api_url is true."
+  type = "string"
+  default = ""
+}
+variable "vm_ipv4_worker_addresses" {
+  description = "Comma separated IPv4 address for worker nodes. Required if configure_app_url or remove_app_url is true."
+  type = "string"
+  default = ""
+}

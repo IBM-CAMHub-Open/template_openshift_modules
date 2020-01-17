@@ -51,10 +51,52 @@ resource "vsphere_virtual_machine" "vm" {
 
   vapp {
     properties {
-      "guestinfo.ignition.config.data" = "${var.ignition[count.index]}"
+      #"guestinfo.ignition.config.data" = "${var.ignition[count.index]}"
+      "guestinfo.ignition.config.data" = "${element(split("," ,var.ignition),count.index)}"
       "guestinfo.ignition.config.data.encoding" = "base64"
     }
   }
+  
+  provisioner "file" {
+	  connection {
+	    type = "ssh"
+	    user = "${var.vm_os_user}"
+	    password =  "${var.vm_os_password}"
+	    private_key = "${base64decode(var.vm_os_private_key_base64)}"
+	    host = "${var.vm_ipv4_address}"
+	    bastion_host        = "${var.bastion_host}"
+	    bastion_user        = "${var.bastion_user}"
+	    bastion_private_key = "${ length(var.bastion_private_key) > 0 ? base64decode(var.bastion_private_key) : var.bastion_private_key}"
+	    bastion_port        = "${var.bastion_port}"
+	    bastion_host_key    = "${var.bastion_host_key}"
+	    bastion_password    = "${var.bastion_password}"        
+	  }	  
+      source = "${path.module}/scripts/delete_infra.sh"
+      destination = "/tmp/delete_infra.sh"
+      when    = "destroy"
+  }   
+  
+  provisioner "remote-exec" {
+	  connection {
+	    type = "ssh"
+	    user = "${var.vm_os_user}"
+	    password =  "${var.vm_os_password}"
+	    private_key = "${base64decode(var.vm_os_private_key_base64)}"
+	    host = "${var.vm_ipv4_address}"
+	    bastion_host        = "${var.bastion_host}"
+	    bastion_user        = "${var.bastion_user}"
+	    bastion_private_key = "${ length(var.bastion_private_key) > 0 ? base64decode(var.bastion_private_key) : var.bastion_private_key}"
+	    bastion_port        = "${var.bastion_port}"
+	    bastion_host_key    = "${var.bastion_host_key}"
+	    bastion_password    = "${var.bastion_password}"        
+	  }	   
+	  when    = "destroy"
+    inline = [
+      "set -e",
+      "chmod +x /tmp/delete_infra.sh",
+      "bash -c '/tmp/delete_infra.sh ${var.instance_type} ${var.instance_count} ${var.clustername} ${var.domain} ${count.index}'"
+    ]
+  }   
 }
 
 resource "null_resource" "machine_created" {

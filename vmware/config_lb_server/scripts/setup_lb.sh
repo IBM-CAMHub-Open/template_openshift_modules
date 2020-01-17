@@ -1,7 +1,14 @@
 #!/bin/bash
 
 OPS=${1}
-IFS=',' read -a iparray <<< "${2}"
+IFS=',' read -a NODEIPARR <<< "${2}"
+iparray=()
+for A_NODE_IP in "${NODEIPARR[@]}"; do
+        if [[ $A_NODE_IP == "192.168.1"* ]]; then
+                iparray+=( $A_NODE_IP )
+        fi
+done
+echo "IPs to process ${iparray[*]}"
 ISBOOT=${3:-"false"}
 
 function wait_apt_lock()
@@ -68,13 +75,37 @@ function create_api_lb_endpoints(){
         NAME=$(gen_random_name control)
         API="\ \ \ \ server ${NAME} ${iparray[i]}:6443 check"
         MCS="\ \ \ \ server ${NAME} ${iparray[i]}:22623 check"
-        LN=`sudo awk /^"backend openshift-api-server"$/'{ print NR;exit }' /etc/haproxy/haproxy.cfg`
-        LN=$((LN + 2))
-        sudo sed -i -e "${LN} a ${API}" /etc/haproxy/haproxy.cfg
-        LN1=`sudo awk /^"backend machine-config-server"$/'{ print NR;exit }' /etc/haproxy/haproxy.cfg`
-        LN1=$((LN1 + 2))
-        sudo sed -i -e "${LN1} a ${MCS}" /etc/haproxy/haproxy.cfg
+        line="${iparray[i]}:6443 check"
+        if grep -q "$line" /etc/haproxy/haproxy.cfg
+        then 
+        	echo "${API} and ${MCS} already added" 
+        else 
+        	echo "${API} and ${MCS} not found. Add ${API} and ${MCS}"        
+        	LN=`sudo awk /^"backend openshift-api-server"$/'{ print NR;exit }' /etc/haproxy/haproxy.cfg`
+        	LN=$((LN + 2))
+        	sudo sed -i -e "${LN} a ${API}" /etc/haproxy/haproxy.cfg
+        	LN1=`sudo awk /^"backend machine-config-server"$/'{ print NR;exit }' /etc/haproxy/haproxy.cfg`
+        	LN1=$((LN1 + 2))
+        	sudo sed -i -e "${LN1} a ${MCS}" /etc/haproxy/haproxy.cfg
+    	fi
     done
+	#Scale down remove ips    
+	CURRENT_APIS=`cat /etc/haproxy/haproxy.cfg | grep "server control" | grep ":6443" | awk '{print $3}' | awk -F":" '{print $1}'`
+	CURRENT_API_ARRAY=($CURRENT_APIS)
+    for A_CURRENT_IP in "${CURRENT_API_ARRAY[@]}"; do
+		found=false
+		for A_NEW_IP in "${iparray[@]}"; do
+			if [[ "$A_CURRENT_IP" == "$A_NEW_IP" ]]; then
+				echo "Control plane IP ${A_CURRENT_IP} is present in current list"
+				found=true
+				break
+			fi
+		done
+		if [[ $found == "false" ]]; then
+			echo "Control IP ${A_CURRENT_IP} not in current list"
+			delete_api_lb_endpoints ${A_CURRENT_IP}
+		fi
+	done    
     start_lb_server
 }
 
@@ -89,44 +120,61 @@ function create_app_lb_endpoints(){
         NAME=$(gen_random_name compute)
         API="\ \ \ \ server ${NAME} ${iparray[i]}:80 check"
         MCS="\ \ \ \ server ${NAME} ${iparray[i]}:443 check"
-        LN=`sudo awk /^"backend ingress-http"$/'{ print NR;exit }' /etc/haproxy/haproxy.cfg`
-        LN=$((LN + 2))
-        sudo sed -i -e "${LN} a ${API}" /etc/haproxy/haproxy.cfg
-        LN1=`sudo awk /^"backend ingress-https"$/'{ print NR;exit }' /etc/haproxy/haproxy.cfg`
-        LN1=$((LN1 + 2))
-        sudo sed -i -e "${LN1} a ${MCS}" /etc/haproxy/haproxy.cfg
+		line="${iparray[i]}:80 check"
+        if grep -q "$line" /etc/haproxy/haproxy.cfg
+        then 
+        	echo "${API} and ${MCS} already added"
+    	else  
+    		echo "${API} and ${MCS} not found. Add ${API} and ${MCS}"      
+	        LN=`sudo awk /^"backend ingress-http"$/'{ print NR;exit }' /etc/haproxy/haproxy.cfg`
+	        LN=$((LN + 2))
+	        sudo sed -i -e "${LN} a ${API}" /etc/haproxy/haproxy.cfg
+	        LN1=`sudo awk /^"backend ingress-https"$/'{ print NR;exit }' /etc/haproxy/haproxy.cfg`
+	        LN1=$((LN1 + 2))
+	        sudo sed -i -e "${LN1} a ${MCS}" /etc/haproxy/haproxy.cfg
+	    fi
     done
+	#Scale down remove ips    
+	CURRENT_APIS=`cat /etc/haproxy/haproxy.cfg | grep "server compute" | grep ":80" | awk '{print $3}' | awk -F":" '{print $1}'`
+	CURRENT_API_ARRAY=($CURRENT_APIS)
+    for A_CURRENT_IP in "${CURRENT_API_ARRAY[@]}"; do
+		found=false
+		for A_NEW_IP in "${iparray[@]}"; do
+			if [[ "$A_CURRENT_IP" == "$A_NEW_IP" ]]; then
+				echo "Compute IP ${A_CURRENT_IP} is present in current list"
+				found=true
+				break
+			fi
+		done
+		if [[ $found == "false" ]]; then
+			echo "Compute IP ${A_CURRENT_IP} not in current list"
+			delete_app_lb_endpoints ${A_CURRENT_IP}
+		fi
+	done
     start_lb_server
 }
 
 function create_boot_endpoints(){
 	API="    server bootstrap ${iparray[0]}:6443 check"
 	MCS="    server bootstrap ${iparray[0]}:22623 check"
-	cp /tmp/lb_api.tmpl /tmp/lb_api.tmpl.orig
-	sudo sed -i -e "s/@boot_6443@/${API}/" /tmp/lb_api.tmpl
-	sudo sed -i -e "s/@boot_22623@/${MCS}/" /tmp/lb_api.tmpl
-	cat /tmp/lb_api.tmpl | sudo tee -a /etc/haproxy/haproxy.cfg > /dev/null	
-	start_lb_server
+	FOUND=`sudo awk /^"frontend openshift-api-server"$/ /etc/haproxy/haproxy.cfg`
+	if [ -z "$FOUND" ]; then
+		cp /tmp/lb_api.tmpl /tmp/lb_api.tmpl.orig
+		sudo sed -i -e "s/@boot_6443@/${API}/" /tmp/lb_api.tmpl
+		sudo sed -i -e "s/@boot_22623@/${MCS}/" /tmp/lb_api.tmpl
+		cat /tmp/lb_api.tmpl | sudo tee -a /etc/haproxy/haproxy.cfg > /dev/null	
+		start_lb_server
+	fi
 }
 
 function delete_api_lb_endpoints(){
-    NUM_IPS=${#iparray[@]}
-    sudo cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.orig	
-	for ((i=0; i < ${NUM_IPS}; i++)); do
-		sudo sed -i -e "/${iparray[i]}:6443 check/d" /etc/haproxy/haproxy.cfg
-		sudo sed -i -e "/${iparray[i]}:22623 check/d" /etc/haproxy/haproxy.cfg
-	done
-	start_lb_server
+	sudo sed -i -e "/${1}:6443 check/d" /etc/haproxy/haproxy.cfg
+	sudo sed -i -e "/${1}:22623 check/d" /etc/haproxy/haproxy.cfg
 }
 
 function delete_app_lb_endpoints(){
-    NUM_IPS=${#iparray[@]}
-    sudo cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.orig	
-	for ((i=0; i < ${NUM_IPS}; i++)); do
-		sudo sed -i -e "/${iparray[i]}:80 check/d" /etc/haproxy/haproxy.cfg
-		sudo sed -i -e "/${iparray[i]}:443 check/d" /etc/haproxy/haproxy.cfg
-	done
-	start_lb_server
+	sudo sed -i -e "/${1}:80 check/d" /etc/haproxy/haproxy.cfg
+	sudo sed -i -e "/${1}:443 check/d" /etc/haproxy/haproxy.cfg
 }
 
 # Identify the platform and version using Python
@@ -149,14 +197,28 @@ if [ "$OPS" = "install" ]; then
 	install_haproxy
 elif [ "$OPS" = "configapi" ]; then 
 	if [ "$ISBOOT" = "true" ]; then	
-		create_boot_endpoints
+		if [ -f "/installer/.install_complete" ]; then
+			echo "Already bootstrapped. Ignore bootstrap step."
+		else
+			create_boot_endpoints
+		fi
 	else
 		create_api_lb_endpoints
 	fi
 elif [ "$OPS" = "configapp" ]; then 
 	create_app_lb_endpoints
 elif [ "$OPS" = "removeapi" ]; then 
-	delete_api_lb_endpoints
+	sudo cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.orig
+	NUM_IPS=${#iparray[@]}
+	for ((i=0; i < ${NUM_IPS}; i++)); do
+		delete_api_lb_endpoints ${iparray[i]}
+	done
+	start_lb_server
 elif [ "$OPS" = "removeapp" ]; then 
-	delete_app_lb_endpoints			
+	sudo cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.orig
+	NUM_IPS=${#iparray[@]}
+	for ((i=0; i < ${NUM_IPS}; i++)); do
+		delete_app_lb_endpoints ${iparray[i]}
+	done
+	start_lb_server			
 fi
